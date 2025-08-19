@@ -3,12 +3,14 @@ import tarfile
 import tempfile
 import urllib.request
 import zipfile
+import os
 from pathlib import Path
 
 from github import Github
 from github.GitRelease import GitRelease
 
-g = Github("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")
+GITHUB_KEY = os.environ.get("GITHUB_KEY")
+g = Github(GITHUB_KEY)
 
 WTF_CONFIG = {
     "SET scriptMemory": "0",
