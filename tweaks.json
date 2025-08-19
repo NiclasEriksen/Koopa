@@ -1,0 +1,48 @@
+{
+  "tweaks": [
+    {
+      "name": "nampower",
+      "dll_name": "nampower.dll",
+      "release": true,
+      "zip": false,
+      "zip_name": "",
+      "direct_url": "",
+      "default_enabled": true,
+      "git_url": "https://github.com/pepopo978/nampower",
+      "description": "Added spell queuing, automatic retry on error, and quickcasting"
+    },
+    {
+      "name": "SuperWoW",
+      "dll_name": "SuperWoWhook.dll",
+      "release": false,
+      "zip": true,
+      "zip_name": "SuperWoW.release.1.5.1.zip",
+      "default_enabled": true,
+      "git_url": "https://github.com/balakethelock/SuperWoW",
+      "direct_url": "https://github.com/balakethelock/SuperWoW/releases/download/Release/SuperWoW.release.1.5.1.zip",
+      "description": "SuperWoW is a launcher/mod made for the 1.12.1 version of World of Warcraft with the purpose of fixing client bugs and expanding the lua-based API used by user interface addons."
+    },
+    {
+      "name": "UnitXP",
+      "dll_name": "UnitXP_SP3.dll",
+      "release": true,
+      "zip": true,
+      "zip_name": "UnitXP-SP3.zip",
+      "direct_url": "",
+      "default_enabled": true,
+      "git_url": "https://github.com/allfoxwy/UnitXP_SP3",
+      "description": "Fixes camera, name plate occlusion, tab-targeting and several other tweaks to modernize the client."
+    },
+    {
+      "name": "VanillaFixes",
+      "dll_name": "VfPatcher.dll",
+      "release": true,
+      "zip": true,
+      "zip_name": "vanillafixes-1.5.3.zip",
+      "direct_url": "",
+      "default_enabled": true,
+      "git_url": "https://github.com/hannesmann/vanillafixes",
+      "description": "Reduces stutter and animation lag."
+    }
+  ]
+}

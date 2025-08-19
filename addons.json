@@ -1,0 +1,9 @@
+[
+  {
+    "name": "AtlasLoot",
+    "addon_name": "AtlasLoot",
+    "git_url": "https://github.com/Otari98/AtlasLoot",
+    "description": "Allows you to view loot from bosses/ enchants/ crafted items/ reputation rewards/ PvP rewards in game",
+    "default_enabled": true
+  }
+]
