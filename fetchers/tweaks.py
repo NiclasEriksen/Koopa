@@ -148,7 +148,7 @@ def apply_vanilla_tweaks(path: str, url: str, settings: dict = {"windows": True,
         return False, [f"Failed to run vanilla tweaks: {e}"]
 
     output = result.communicate()
-    return True, result.stdout.decode().splitlines() if not settings["windows"] else [m.strip() for m in output[0].decode("ascii").split("\n")]
+    return True, [m.strip() for m in output[0].decode("ascii").split("\n")]
 
 
 def update_dll_txt(path: str, tweaks: list[Tweak]):
