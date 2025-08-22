@@ -5,7 +5,7 @@ import platform
 from PySide6 import QtCore, QtGui
 from pathlib import Path
 from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QMainWindow, QHBoxLayout, QVBoxLayout, QLabel, \
-    QFileDialog, QLineEdit, QCheckBox, QProgressBar
+    QFileDialog, QLineEdit, QCheckBox, QProgressBar, QScrollArea
 import sys
 import fetchers
 from fetchers import apply_vanilla_tweaks, update_dll_txt, set_wtf_config
@@ -40,6 +40,15 @@ class TweakCheckBox(QCheckBox):
         self.setChecked(tweak.default_enabled)
 
 
+class ModCheckBox(QCheckBox):
+    def __init__(self, mod: fetchers.Mod, parent=None):
+        super().__init__(parent)
+        self.setText(mod.name)
+        self.mod: fetchers.Tweak = mod
+        self.setToolTip(mod.description)
+        self.setChecked(mod.default_enabled)
+
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -51,6 +60,8 @@ class MainWindow(QMainWindow):
         layout_r = QVBoxLayout()
 
         # Left layout
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
         self.text_area = QLabel(self)
         self.text_area.setWordWrap(True)
         self.text_area.setTextInteractionFlags(QtCore.Qt.TextSelectableByKeyboard | QtCore.Qt.TextSelectableByMouse)
@@ -63,6 +74,7 @@ class MainWindow(QMainWindow):
         border: 1px solid black;
         """)
         self.text_area.autoFillBackground()
+        scroll_area.setWidget(self.text_area)
 
         self.progress = QProgressBar()
         self.progress.setRange(0, 100)
@@ -81,12 +93,26 @@ class MainWindow(QMainWindow):
         if p.exists():
             self.log("Found existing tweaks.json, loading...")
             with open(p) as json_file:
-                json_data = json.load(json_file)
+                json_data_tweaks = json.load(json_file)
         else:
-            json_data = {}
+            json_data_tweaks = {}
 
-        tweaks = fetchers.load_tweaks_from_json(json_data)
+        p = Path(__file__).parent.resolve() / "mods.json"
+        if p.exists():
+            self.log("Found existing mods.json, loading...")
+            with open(p) as json_file:
+                json_data_mods = json.load(json_file)
+        else:
+            json_data_mods = {}
+
+        tweaks_label = QLabel(self)
+        tweaks_label.setText("Tweaks")
+        layout_r.addWidget(tweaks_label)
+
+        tweaks = fetchers.load_tweaks_from_json(json_data_tweaks)
+        mods = fetchers.load_mods_from_json(json_data_mods)
         self.tweak_buttons = []
+        self.mod_buttons = []
 
         for tweak in tweaks:
             cb = TweakCheckBox(tweak)
@@ -99,12 +125,21 @@ class MainWindow(QMainWindow):
                 layout_r.addWidget(l)
             self.tweak_buttons.append(cb)
 
+        mods_label = QLabel(self)
+        mods_label.setText("Mods")
+        layout_r.addWidget(mods_label)
+
+        for mod in mods:
+            cb = ModCheckBox(mod)
+            layout_r.addWidget(cb)
+            self.mod_buttons.append(cb)
+
         layout_r.addWidget(self.path_edit)
         layout_r.addWidget(button_path)
 
         layout_r.addWidget(button_start)
 
-        layout_l.addWidget(self.text_area)
+        layout_l.addWidget(scroll_area)
         layout_l.addWidget(self.progress)
         layout_r.setAlignment(QtCore.Qt.AlignTop)
         layout.addLayout(layout_l)
@@ -171,15 +206,36 @@ class MainWindow(QMainWindow):
             for tb in self.tweak_buttons:
                 if tb.isChecked():
                     total += 1
+            for mb in self.mod_buttons:
+                if mb.isChecked():
+                    total += 1
             i = 0
             for tb in self.tweak_buttons:
                 if tb.isChecked():
                     i += 1
                     try:
-                        success, messages = tb.tweak.install(self.config["turtle"]["turtle_path"])
+                        success, messages = tb.tweak.install(self.config)
+                        self.save_config()
                     except Exception as e:
                         errors += 1
-                        self.log("Failed to install tweak {tweak.name}: {e}", level=LOG_ERROR)
+                        self.log(f"Failed to install tweak {tb.tweak.name}: {e}", level=LOG_ERROR)
+                        QApplication.processEvents()
+                        continue
+                    QApplication.processEvents()
+                    self.progress.setValue(int(i * (100 / total)))
+                    if not success:
+                        errors += 1
+                    for m in messages:
+                        self.log(m, level=LOG_INFO if success else LOG_ERROR)
+
+            for mb in self.mod_buttons:
+                if mb.isChecked():
+                    i += 1
+                    try:
+                        success, messages = mb.mod.install(self.config)
+                    except Exception as e:
+                        errors += 1
+                        self.log(f"Failed to install mod {mb.mod.name}: {e}", level=LOG_ERROR)
                         QApplication.processEvents()
                         continue
                     QApplication.processEvents()

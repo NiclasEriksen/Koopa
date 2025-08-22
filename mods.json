@@ -1,18 +1,22 @@
-[
-  {
-    "name": "Water texture replacement",
-    "dest_path": "Data",
-    "dest_filename": "Patch-W.mpq",
-    "git_url": "",
-    "http_url": "",
-    "description": "Simple patch that makes water see-through"
-  },
-  {
-    "name": "Save login details",
-    "dest_path": "Data",
-    "dest_filename": "Patch-Y.mpq",
-    "git_url": "",
-    "http_url": "",
-    "description": "Save login details for multiple accounts, allowing for one-click login"
-  }
-]
+{
+  "mods": [
+    {
+      "name": "Water texture replacement",
+      "dest_path": "Data",
+      "mpq_name": "Patch-W.mpq",
+      "git_url": "",
+      "zip": false,
+      "direct_url": "https://drive.google.com/uc?export=download&id=1RRZQjh0CvlskSmdY6ht9ou6ymM-w23dW",
+      "description": "Simple patch that makes water see-through"
+    },
+    {
+      "name": "Save login details",
+      "dest_path": "Data",
+      "mpq_name": "Patch-Y.mpq",
+      "git_url": "",
+      "zip": false,
+      "direct_url": "https://drive.google.com/uc?export=download&id=18LFMRa-PBUsbasIHbt__laAIlXQ6spwH",
+      "description": "Save login details for multiple accounts, allowing for one-click login"
+    }
+  ]
+}

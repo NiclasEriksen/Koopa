@@ -4,13 +4,17 @@ import tempfile
 import urllib.request
 import zipfile
 import os
+from configparser import ConfigParser
 from pathlib import Path
 
 from github import Github
 from github.GitRelease import GitRelease
 
-GITHUB_KEY = os.environ.get("GITHUB_KEY")
-g = Github(GITHUB_KEY)
+GITHUB_KEY = os.environ.get("GITHUB_KEY", None)
+if not GITHUB_KEY:
+    g = Github()
+else:
+    g = Github(GITHUB_KEY)
 
 WTF_CONFIG = {
     "SET scriptMemory": "0",
@@ -47,9 +51,17 @@ class Tweak(object):
         self.release = release_data["release"] if "release" in release_data else True
         self.default_enabled = release_data["default_enabled"] if "default_enabled" in release_data else True
 
-    def install(self, path: str) -> (bool, list[str]):
+    def install(self, config: ConfigParser) -> (bool, list[str]):
         messages = []
+        path = config["turtle"]["turtle_path"]
+        if config.has_option("tweaks", self.name):
+            installed_version = config["tweaks"][self.name]
+        else:
+            installed_version = ""
+
         if self.direct_url:
+            if self.direct_url.split("/")[-1] == installed_version and Path.exists(Path(path) / self.dll_name):
+                return True, [f"{self.name} is already the latest version."]
             try:
                 with tempfile.NamedTemporaryFile(mode="wb", delete=False) as tmp:
                     urllib.request.urlretrieve(self.direct_url, tmp.name)
@@ -57,12 +69,17 @@ class Tweak(object):
                         with zipfile.ZipFile(tmp.name) as zip:
                             zip.extract(self.dll_name, path)
                             messages.append(f"Successfully downloaded and installed {self.name}")
+                    config["tweaks"][self.name] = self.direct_url.split("/")[-1]
             except Exception as e:
                 return False, [e]
         elif self.release:
             url = self.git_url.replace("https://github.com/", "")
             repo = g.get_repo(url)
             latest: GitRelease = repo.get_releases()[0]
+
+            if latest.tag_name == installed_version and Path.exists(Path(path) / self.dll_name):
+                return True, [f"{self.name} is already the latest version."]
+
             for asset in latest.assets:
                 if self.zip:
                     if asset.name == self.zip_name:
@@ -74,12 +91,14 @@ class Tweak(object):
                                     messages.append(
                                         f"Successfully downloaded and installed {self.name} (version {latest.tag_name})"
                                     )
+                                config["tweaks"][self.name] = latest.tag_name
                         except Exception as e:
                             return False, f"Failed to download {self.name} (version {latest.tag_name}): {e}"
                 else:
                     if asset.name == self.dll_name:
                         try:
                             urllib.request.urlretrieve(asset.browser_download_url, Path(path) / self.dll_name)
+                            config["tweaks"][self.name] = latest.tag_name
                         except Exception as e:
                             return False, f"Failed to download {self.name} (version {latest.tag_name}): {e}"
                         messages.append(
