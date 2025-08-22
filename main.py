@@ -4,8 +4,10 @@ import os
 import platform
 from PySide6 import QtCore, QtGui
 from pathlib import Path
+
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QMainWindow, QHBoxLayout, QVBoxLayout, QLabel, \
-    QFileDialog, QLineEdit, QCheckBox, QProgressBar, QScrollArea
+    QFileDialog, QLineEdit, QCheckBox, QProgressBar, QScrollArea, QStyle
 import sys
 import fetchers
 from fetchers import apply_vanilla_tweaks, update_dll_txt, set_wtf_config
@@ -54,6 +56,8 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("Koopa")
+        app_icon = QIcon("koopa.ico")
+        self.setWindowIcon(app_icon)
 
         layout = QHBoxLayout()
         layout_l = QVBoxLayout()
@@ -84,8 +88,10 @@ class MainWindow(QMainWindow):
         self.path_edit = QLineEdit(self)
 
         button_path = QPushButton("Select Turtle folder")
+        button_path.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_DirIcon))
         button_path.clicked.connect(self.path_button_callback)
         button_start = QPushButton("Install tweaks and patch WoW.exe")
+        button_start.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_DialogOkButton))
         button_start.setStyleSheet("QPushButton { background-color: rgb(70, 150, 0); color: white; }")
         button_start.clicked.connect(self.start_button_callback)
 
@@ -106,7 +112,7 @@ class MainWindow(QMainWindow):
             json_data_mods = {}
 
         tweaks_label = QLabel(self)
-        tweaks_label.setText("Tweaks")
+        tweaks_label.setText("Tweaks:")
         layout_r.addWidget(tweaks_label)
 
         tweaks = fetchers.load_tweaks_from_json(json_data_tweaks)
@@ -126,13 +132,24 @@ class MainWindow(QMainWindow):
             self.tweak_buttons.append(cb)
 
         mods_label = QLabel(self)
-        mods_label.setText("Mods")
+        mods_label.setText("Mods:")
         layout_r.addWidget(mods_label)
 
         for mod in mods:
             cb = ModCheckBox(mod)
             layout_r.addWidget(cb)
             self.mod_buttons.append(cb)
+
+        patch_label = QLabel(self)
+        patch_label.setText("Patches:")
+        layout_r.addWidget(patch_label)
+
+        self.patch_cb = QCheckBox(self)
+        self.patch_cb.setChecked(True)
+        self.patch_cb.setDisabled(True)
+        self.patch_cb.setText("VanillaTweaks")
+        self.patch_cb.setToolTip("Patch WoW.exe with fixes, this step is mandatory (for now)")
+        layout_r.addWidget(self.patch_cb)
 
         layout_r.addWidget(self.path_edit)
         layout_r.addWidget(button_path)
