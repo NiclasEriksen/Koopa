@@ -142,7 +142,7 @@ def apply_vanilla_tweaks(path: str, url: str, settings: dict = {"windows": True,
     try:
         result = subprocess.run(args, cwd=path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     except Exception as e:
-        return False, f"Failed to run vanilla tweaks: {e}"
+        return False, [f"Failed to run vanilla tweaks: {e}"]
 
     return True, result.stdout.decode().splitlines() if result.stdout else []
 
