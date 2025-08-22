@@ -56,7 +56,7 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("Koopa")
-        app_icon = QIcon("koopa.ico")
+        app_icon = QIcon("koopa.png")
         self.setWindowIcon(app_icon)
 
         layout = QHBoxLayout()
@@ -188,11 +188,11 @@ class MainWindow(QMainWindow):
 
     def log(self, text, level=LOG_INFO):
         if level == LOG_ERROR:
-            msg = f"<b><font color='red'>{text}</font></b>"
+            msg = f"<b><font color='red'>{text.strip()}</font></b>"
         elif level == LOG_WARNING:
-            msg = f"<b><font color='orange'>{text}</font></b>"
+            msg = f"<b><font color='orange'>{text.strip()}</font></b>"
         elif level == LOG_SUCCESS:
-            msg = f"<b><font color='green'>{text}</font></b>"
+            msg = f"<b><font color='green'>{text.strip()}</font></b>"
         else:
             msg = text
 

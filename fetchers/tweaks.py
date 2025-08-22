@@ -127,7 +127,7 @@ def apply_vanilla_tweaks(path: str, url: str, settings: dict = {"windows": True,
 
     args = []
     if settings["windows"]:
-        args.append("vanilla-tweaks.exe")
+        args.append(".\\vanilla-tweaks.exe")
     else:
         args.append("./vanilla-tweaks")
 
