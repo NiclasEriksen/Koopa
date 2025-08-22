@@ -128,6 +128,7 @@ def apply_vanilla_tweaks(path: str, url: str, settings: dict = {"windows": True,
     args = []
     if settings["windows"]:
         args.append(".\\vanilla-tweaks.exe")
+        path = path.replace("/", "\\")
     else:
         args.append("./vanilla-tweaks")
 
@@ -139,12 +140,15 @@ def apply_vanilla_tweaks(path: str, url: str, settings: dict = {"windows": True,
         args.append("WoW.exe")
 
     args.append("WoW.exe")
+    print(args)
+    print(path)
     try:
-        result = subprocess.run(args, cwd=path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        result = subprocess.Popen(args, cwd=path, shell=settings["windows"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     except Exception as e:
         return False, [f"Failed to run vanilla tweaks: {e}"]
 
-    return True, result.stdout.decode().splitlines() if result.stdout else []
+    output = result.communicate()
+    return True, result.stdout.decode().splitlines() if not settings["windows"] else [m.strip() for m in output[0].decode("ascii").split("\n")]
 
 
 def update_dll_txt(path: str, tweaks: list[Tweak]):
