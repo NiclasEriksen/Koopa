@@ -56,7 +56,8 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("Koopa")
-        app_icon = QIcon("koopa.ico")
+        app_icon = QIcon(str(Path(__file__).parent.resolve() / "koopa.ico"))
+
         self.setWindowIcon(app_icon)
 
         layout = QHBoxLayout()
