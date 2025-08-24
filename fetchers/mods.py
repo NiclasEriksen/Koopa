@@ -16,6 +16,7 @@ class Mod(object):
     zip_name: str = ""
     release: bool = False
     default_enabled: bool = True
+    has_update: bool = False
 
     def __init__(self, release_data: dict):
         self.name = release_data["name"] if "name" in release_data else ""
@@ -27,12 +28,18 @@ class Mod(object):
         self.zip = release_data["zip"] if "zip" in release_data else True
         self.default_enabled = release_data["default_enabled"] if "default_enabled" in release_data else True
 
+    def check_update(self, config: ConfigParser) -> bool:
+        path = config["turtle"]["turtle_path"]
+        if Path.exists(Path(path) / self.dest_path / self.mpq_name):
+            self.has_update = False
+        else:
+            self.has_update = True
+        return self.has_update
+
     def install(self, config: ConfigParser) -> (bool, list[str]):
         path = config["turtle"]["turtle_path"]
 
         if self.direct_url:
-            if Path.exists(Path(path) / self.dest_path / self.mpq_name):
-                return True, [f"{self.name} is already installed, skipping."]
             try:
                 with tempfile.NamedTemporaryFile(mode="wb", delete=False) as tmp:
                     if self.zip:

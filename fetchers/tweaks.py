@@ -12,7 +12,7 @@ from github.GitRelease import GitRelease
 
 GITHUB_KEY = os.environ.get("GITHUB_KEY", None)
 if not GITHUB_KEY:
-    g = Github()
+    g = Github("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")
 else:
     g = Github(GITHUB_KEY)
 
@@ -39,6 +39,9 @@ class Tweak(object):
     zip_name: str = ""
     release: bool = False
     default_enabled: bool = True
+    has_update: bool = False
+    download_url: str = ""
+    new_version: str = ""
 
     def __init__(self, release_data: dict):
         self.name = release_data["name"] if "name" in release_data else ""
@@ -51,9 +54,9 @@ class Tweak(object):
         self.release = release_data["release"] if "release" in release_data else True
         self.default_enabled = release_data["default_enabled"] if "default_enabled" in release_data else True
 
-    def install(self, config: ConfigParser) -> (bool, list[str]):
-        messages = []
+    def check_update(self, config: ConfigParser) -> bool:
         path = config["turtle"]["turtle_path"]
+
         if config.has_option("tweaks", self.name):
             installed_version = config["tweaks"][self.name]
         else:
@@ -61,49 +64,73 @@ class Tweak(object):
 
         if self.direct_url:
             if self.direct_url.split("/")[-1] == installed_version and Path.exists(Path(path) / self.dll_name):
-                return True, [f"{self.name} is already the latest version."]
-            try:
-                with tempfile.NamedTemporaryFile(mode="wb", delete=False) as tmp:
-                    urllib.request.urlretrieve(self.direct_url, tmp.name)
-                    if self.zip:
-                        with zipfile.ZipFile(tmp.name) as zip:
-                            zip.extract(self.dll_name, path)
-                            messages.append(f"Successfully downloaded and installed {self.name}")
-                    config["tweaks"][self.name] = self.direct_url.split("/")[-1]
-            except Exception as e:
-                return False, [e]
+                self.has_update = False
+            else:
+                self.new_version = self.direct_url.split("/")[-1]
+                self.has_update = True
+
         elif self.release:
             url = self.git_url.replace("https://github.com/", "")
             repo = g.get_repo(url)
             latest: GitRelease = repo.get_releases()[0]
 
             if latest.tag_name == installed_version and Path.exists(Path(path) / self.dll_name):
-                return True, [f"{self.name} is already the latest version."]
+                self.has_update = False
+            else:
+                self.has_update = True
+                self.new_version = latest.tag_name
 
             for asset in latest.assets:
                 if self.zip:
                     if asset.name == self.zip_name:
-                        try:
-                            with tempfile.NamedTemporaryFile(mode="wb", delete=False) as tmp:
-                                urllib.request.urlretrieve(asset.browser_download_url, tmp.name)
-                                with zipfile.ZipFile(tmp.name) as zip:
-                                    zip.extract(self.dll_name, path)
-                                    messages.append(
-                                        f"Successfully downloaded and installed {self.name} (version {latest.tag_name})"
-                                    )
-                                config["tweaks"][self.name] = latest.tag_name
-                        except Exception as e:
-                            return False, f"Failed to download {self.name} (version {latest.tag_name}): {e}"
+                        self.download_url = asset.browser_download_url
                 else:
                     if asset.name == self.dll_name:
-                        try:
-                            urllib.request.urlretrieve(asset.browser_download_url, Path(path) / self.dll_name)
-                            config["tweaks"][self.name] = latest.tag_name
-                        except Exception as e:
-                            return False, f"Failed to download {self.name} (version {latest.tag_name}): {e}"
-                        messages.append(
-                            f"Successfully downloaded and installed {self.name} (version {latest.tag_name})"
-                        )
+                        self.download_url = asset.browser_download_url
+
+        return self.has_update
+
+    def install(self, config: ConfigParser) -> (bool, list[str]):
+        messages = []
+        path = config["turtle"]["turtle_path"]
+
+        if self.direct_url:
+            if not self.has_update:
+                return True, [f"{self.name} is already the latest version."]
+            try:
+                with tempfile.NamedTemporaryFile(mode="wb", delete=False) as tmp:
+                    urllib.request.urlretrieve(self.direct_url, tmp.name)
+                    if self.zip:
+                        with zipfile.ZipFile(tmp.name) as zip_file:
+                            zip_file.extract(self.dll_name, path)
+                            messages.append(f"Successfully downloaded and installed {self.name}")
+                    config["tweaks"][self.name] = self.direct_url.split("/")[-1]
+            except Exception as e:
+                return False, [e]
+
+        elif self.release:
+            if self.has_update and self.download_url != "":
+                if self.zip:
+                    try:
+                        with tempfile.NamedTemporaryFile(mode="wb", delete=False) as tmp:
+                            urllib.request.urlretrieve(self.download_url, tmp.name)
+                            with zipfile.ZipFile(tmp.name) as zip_file:
+                                zip_file.extract(self.dll_name, path)
+                                messages.append(
+                                    f"Successfully downloaded and installed {self.name} (version {self.new_version})"
+                                )
+                            config["tweaks"][self.name] = self.new_version
+                    except Exception as e:
+                        return False, f"Failed to download {self.name} (version {self.new_version}): {e}"
+                else:
+                    try:
+                        urllib.request.urlretrieve(self.download_url, Path(path) / self.dll_name)
+                        config["tweaks"][self.name] = self.new_version
+                    except Exception as e:
+                        return False, f"Failed to download {self.name} (version {self.new_version}): {e}"
+                    messages.append(
+                        f"Successfully downloaded and installed {self.name} (version {self.new_version})"
+                    )
 
         return True, messages
 
