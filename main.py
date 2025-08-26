@@ -253,14 +253,26 @@ class MainWindow(QMainWindow):
         updates_found: int = 0
         QApplication.processEvents()
         for tb in self.tweak_buttons:
-            has_update = tb.tweak.check_update(self.config)
+            try:
+                has_update = tb.tweak.check_update(self.config)
+            except Exception as e:
+                self.log(f"An error occurred: {e}", LOG_ERROR)
+                QApplication.processEvents()
+                continue
+
             if has_update and tb.isChecked():
                 updates_found += 1
                 tb.set_update_style()
             QApplication.processEvents()
 
         for mod in self.mod_buttons:
-            has_update = mod.mod.check_update(self.config)
+            try:
+                has_update = mod.mod.check_update(self.config)
+            except Exception as e:
+                self.log(f"An error occurred: {e}", LOG_ERROR)
+                QApplication.processEvents()
+                continue
+
             if has_update and mod.isChecked():
                 updates_found += 1
                 mod.set_update_style()

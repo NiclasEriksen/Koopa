@@ -3,6 +3,7 @@
     {
       "name": "nampower",
       "dll_name": "nampower.dll",
+      "extractall": false,
       "release": true,
       "zip": false,
       "zip_name": "",
@@ -14,6 +15,7 @@
     {
       "name": "SuperWoW",
       "dll_name": "SuperWoWhook.dll",
+      "extractall": false,
       "release": false,
       "zip": true,
       "zip_name": "SuperWoW.release.1.5.1.zip",
@@ -25,6 +27,7 @@
     {
       "name": "UnitXP",
       "dll_name": "UnitXP_SP3.dll",
+      "extractall": false,
       "release": true,
       "zip": true,
       "zip_name": "UnitXP-SP3.zip",
@@ -36,6 +39,7 @@
     {
       "name": "VanillaFixes",
       "dll_name": "VfPatcher.dll",
+      "extractall": false,
       "release": true,
       "zip": true,
       "zip_name": "vanillafixes-1.5.3.zip",
@@ -43,6 +47,18 @@
       "default_enabled": true,
       "git_url": "https://github.com/hannesmann/vanillafixes",
       "description": "Reduces stutter and animation lag."
+    },
+    {
+      "name": "Interact",
+      "dll_name": "Interact.dll",
+      "extractall": true,
+      "release": true,
+      "zip": true,
+      "zip_name": "Interact.zip",
+      "direct_url": "",
+      "default_enabled": false,
+      "git_url": "https://github.com/luskanek/Interact",
+      "description": "Adds interact and loot all key bindings."
     }
   ]
 }

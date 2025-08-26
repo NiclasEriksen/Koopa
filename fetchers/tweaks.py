@@ -12,7 +12,7 @@ from github.GitRelease import GitRelease
 
 GITHUB_KEY = os.environ.get("GITHUB_KEY", None)
 if not GITHUB_KEY:
-    g = Github("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")
+    g = Github()
 else:
     g = Github(GITHUB_KEY)
 
@@ -35,6 +35,7 @@ class Tweak(object):
     git_url: str = ""
     direct_url: str = ""
     dll_name: str = ""
+    extractall: bool = False
     zip: bool = False
     zip_name: str = ""
     release: bool = False
@@ -46,6 +47,7 @@ class Tweak(object):
     def __init__(self, release_data: dict):
         self.name = release_data["name"] if "name" in release_data else ""
         self.description = release_data["description"] if "description" in release_data else ""
+        self.extractall = release_data["extractall"] if "extractall" in release_data else False
         self.git_url = release_data["git_url"] if "git_url" in release_data else ""
         self.direct_url = release_data["direct_url"] if "direct_url" in release_data else ""
         self.dll_name = release_data["dll_name"] if "dll_name" in release_data else ""
@@ -115,7 +117,10 @@ class Tweak(object):
                         with tempfile.NamedTemporaryFile(mode="wb", delete=False) as tmp:
                             urllib.request.urlretrieve(self.download_url, tmp.name)
                             with zipfile.ZipFile(tmp.name) as zip_file:
-                                zip_file.extract(self.dll_name, path)
+                                if self.extractall:
+                                    zip_file.extractall(path)
+                                else:
+                                    zip_file.extract(self.dll_name, path)
                                 messages.append(
                                     f"Successfully downloaded and installed {self.name} (version {self.new_version})"
                                 )
