@@ -107,6 +107,7 @@ class Tweak(object):
                             zip_file.extract(self.dll_name, path)
                             messages.append(f"Successfully downloaded and installed {self.name}")
                     config["tweaks"][self.name] = self.direct_url.split("/")[-1]
+                    self.has_update = False
             except Exception as e:
                 return False, [e]
 
@@ -125,12 +126,14 @@ class Tweak(object):
                                     f"Successfully downloaded and installed {self.name} (version {self.new_version})"
                                 )
                             config["tweaks"][self.name] = self.new_version
+                            self.has_update = False
                     except Exception as e:
                         return False, f"Failed to download {self.name} (version {self.new_version}): {e}"
                 else:
                     try:
                         urllib.request.urlretrieve(self.download_url, Path(path) / self.dll_name)
                         config["tweaks"][self.name] = self.new_version
+                        self.has_update = False
                     except Exception as e:
                         return False, f"Failed to download {self.name} (version {self.new_version}): {e}"
                     messages.append(

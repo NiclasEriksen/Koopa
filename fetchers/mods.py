@@ -48,6 +48,7 @@ class Mod(object):
                             zip.extract(self.mpq_name, Path(path) / self.dest_path)
                     else:
                         urllib.request.urlretrieve(self.direct_url, Path(path) / self.dest_path / self.mpq_name)
+                    self.has_update = False
                     return True, [f"Successfully downloaded and installed {self.name}"]
 
             except Exception as e:

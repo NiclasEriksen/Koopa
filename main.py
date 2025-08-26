@@ -262,7 +262,7 @@ class MainWindow(QMainWindow):
 
             if has_update and tb.isChecked():
                 updates_found += 1
-                tb.set_update_style()
+            tb.set_update_style()
             QApplication.processEvents()
 
         for mod in self.mod_buttons:
@@ -275,7 +275,7 @@ class MainWindow(QMainWindow):
 
             if has_update and mod.isChecked():
                 updates_found += 1
-                mod.set_update_style()
+            mod.set_update_style()
             QApplication.processEvents()
 
         self.set_start_button_state(True)
@@ -359,6 +359,7 @@ class MainWindow(QMainWindow):
                     i += 1
                     try:
                         success, messages = tb.tweak.install(self.config)
+                        tb.set_update_style()
                         self.save_config()
                     except Exception as e:
                         errors += 1
@@ -377,6 +378,7 @@ class MainWindow(QMainWindow):
                     i += 1
                     try:
                         success, messages = mb.mod.install(self.config)
+                        mb.set_update_style()
                     except Exception as e:
                         errors += 1
                         self.log(f"Failed to install mod {mb.mod.name}: {e}", level=LOG_ERROR)
