@@ -112,6 +112,9 @@ class Tweak(object):
                 return False, [e]
 
         elif self.release:
+            print(f"Installing {self.name} from release.")
+            if self.download_url == "":
+                return False, [f"No download URL provided for {self.name}"]
             if self.has_update and self.download_url != "":
                 if self.zip:
                     try:
@@ -128,7 +131,7 @@ class Tweak(object):
                             config["tweaks"][self.name] = self.new_version
                             self.has_update = False
                     except Exception as e:
-                        return False, f"Failed to download {self.name} (version {self.new_version}): {e}"
+                        return False, [f"Failed to download {self.name} (version {self.new_version}): {e}"]
                 else:
                     try:
                         urllib.request.urlretrieve(self.download_url, Path(path) / self.dll_name)

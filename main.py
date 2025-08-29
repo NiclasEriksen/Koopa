@@ -37,12 +37,12 @@ if not p.exists():
 
 
 class TweakCheckBox(QCheckBox):
-    def __init__(self, tweak: fetchers.Tweak, parent=None):
+    def __init__(self, tweak: fetchers.Tweak, parent=None, installed=False):
         super().__init__(parent)
         self.setText(tweak.name)
         self.tweak: fetchers.Tweak = tweak
         self.setToolTip(tweak.description)
-        self.setChecked(tweak.default_enabled)
+        self.setChecked(tweak.default_enabled if not installed else True)
 
     def set_update_style(self):
         if self.tweak.has_update:
@@ -56,12 +56,12 @@ class TweakCheckBox(QCheckBox):
 
 
 class ModCheckBox(QCheckBox):
-    def __init__(self, mod: fetchers.Mod, parent=None):
+    def __init__(self, mod: fetchers.Mod, parent=None, installed=False):
         super().__init__(parent)
         self.setText(mod.name)
         self.mod: fetchers.Tweak = mod
         self.setToolTip(mod.description)
-        self.setChecked(mod.default_enabled)
+        self.setChecked(mod.default_enabled if not installed else True)
 
     def set_update_style(self):
         if self.mod.has_update:
@@ -163,7 +163,10 @@ class MainWindow(QMainWindow):
         self.mod_buttons = []
 
         for tweak in tweaks:
-            cb = TweakCheckBox(tweak)
+            installed = False
+            if self.config.has_option("enabled_tweaks", tweak.name):
+                installed = self.config["enabled_tweaks"][tweak.name] == "1"
+            cb = TweakCheckBox(tweak, installed=installed)
             tweak_vbox.addWidget(cb)
             if tweak.name == "SuperWoW" and WINDOWS:
                 l = QLabel(self)
@@ -174,7 +177,10 @@ class MainWindow(QMainWindow):
             self.tweak_buttons.append(cb)
 
         for mod in mods:
-            cb = ModCheckBox(mod)
+            installed = False
+            if self.config.has_option("enabled_mods", mod.name):
+                installed = self.config["enabled_mods"][mod.name] == "1"
+            cb = ModCheckBox(mod, installed=installed)
             mod_vbox.addWidget(cb)
             self.mod_buttons.append(cb)
 
@@ -291,9 +297,19 @@ class MainWindow(QMainWindow):
     def load_config(self):
         if os.path.exists(CONFIG_PATH):
             self.config.read(CONFIG_PATH)
+            if not self.config.has_section("tweaks"):
+                self.config["tweaks"] = {}
+            if not self.config.has_section("mods"):
+                self.config["mods"] = {}
+            if not self.config.has_section("enabled_tweaks"):
+                self.config["enabled_tweaks"] = {}
+            if not self.config.has_section("enabled_mods"):
+                self.config["enabled_mods"] = {}
         else:
             self.config["turtle"] = {}
             self.config["tweaks"] = {}
+            self.config["enabled_tweaks"] = {}
+            self.config["enabled_mods"] = {}
 
     def save_config(self):
         self.config["turtle"]["turtle_path"] = self.path_edit.text()
@@ -355,7 +371,13 @@ class MainWindow(QMainWindow):
                     total += 1
             i = 0
             for tb in self.tweak_buttons:
+                if tb.isChecked():
+                    self.config.set("enabled_tweaks", tb.tweak.name, "1")
+                else:
+                    self.config.set("enabled_tweaks", tb.tweak.name, "0")
+
                 if tb.isChecked() and tb.tweak.has_update:
+                    print(f"Installing/updating {tb.tweak.name}")
                     i += 1
                     try:
                         success, messages = tb.tweak.install(self.config)
@@ -374,6 +396,11 @@ class MainWindow(QMainWindow):
                         self.log(m, level=LOG_INFO if success else LOG_ERROR)
 
             for mb in self.mod_buttons:
+                if mb.isChecked():
+                    self.config.set("enabled_mods", mb.mod.name, "1")
+                else:
+                    self.config.set("enabled_mods", mb.mod.name, "0")
+
                 if mb.isChecked() and mb.mod.has_update:
                     i += 1
                     try:
@@ -415,6 +442,7 @@ class MainWindow(QMainWindow):
             else:
                 self.log(f"There were {errors} errors, read log to see what went wrong.", level=LOG_WARNING)
 
+        self.save_config()
 
     def validate_turtle_folder(self, path: str) -> bool:
         if not os.path.isdir(path):

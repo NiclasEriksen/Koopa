@@ -30,7 +30,7 @@
       "extractall": false,
       "release": true,
       "zip": true,
-      "zip_name": "UnitXP-SP3.zip",
+      "zip_name": "UnitXP_SP3.zip",
       "direct_url": "",
       "default_enabled": true,
       "git_url": "https://github.com/allfoxwy/UnitXP_SP3",
