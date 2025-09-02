@@ -30,10 +30,10 @@
       "extractall": false,
       "release": true,
       "zip": true,
-      "zip_name": "UnitXP_SP3.zip",
+      "zip_name": "UnitXP_SP3_v52.zip",
       "direct_url": "",
       "default_enabled": true,
-      "git_url": "https://github.com/allfoxwy/UnitXP_SP3",
+      "git_url": "https://github.com/jrc13245/UnitXP_SP3",
       "description": "Fixes camera, name plate occlusion, tab-targeting and several other tweaks to modernize the client."
     },
     {
